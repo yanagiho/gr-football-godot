@@ -1,4 +1,3 @@
-class_name GameManager
 extends Node
 
 ## ゲーム全体で共有するグローバル状態を管理するオートロード
