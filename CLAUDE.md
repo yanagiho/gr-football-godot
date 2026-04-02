@@ -162,12 +162,27 @@ godot --headless -- --server
 - 現在のブランチ: `feature/phase1-multiplayer-movement`（PR #1 → develop）
 
 ### 次にやること（優先順）
-1. **アニメーション対応**（中断中）
-   - Mixamo（https://www.mixamo.com）に Player.fbx をアップロード
-   - Idle / Run / Walk アニメーションを **FBX Binary・Without Skin・30fps** でダウンロード
-   - `godot/assets/animations/` に配置
-   - player_character.gd はすでにアニメーション切り替えロジック実装済み
+1. **Mixamoアニメーションのダウンロード**（中断中）
+   - Mixamo（https://www.mixamo.com）に `godot/assets/models/characters/Player.fbx` をアップロード
+   - 以下のアニメーションを **FBX Binary・Without Skin・30fps** でダウンロード
+     | Mixamo検索ワード | アクション | ANIMATION_NAMESの値 |
+     |----------------|-----------|-------------------|
+     | Idle | 待機 | "Idle" |
+     | Running | 走り | "Running" |
+     | Sprinting | ダッシュ | "Sprinting" |
+     | Soccer Dribble | ドリブル | "Soccer Dribble" |
+     | Soccer Kick | キック | "Soccer Kick" |
+     | Jump | ジャンプ | "Jump" |
+     | Sliding | スライディング | "Sliding" |
+   - ダウンロードしたFBXを `godot/assets/animations/mixamo/` に配置
+   - `player_action.gd` の `ANIMATION_NAMES` をダウンロードしたファイル名に合わせて更新
 2. Phase 2: Cloudflare Workersマッチメイキング実装
+
+### アニメーションステートマシン（実装済み）
+- `src/shared/models/player_action.gd` — アクションenum・アニメーション名対応表
+- `src/shared/models/player_state_machine.gd` — アクション.xlsxの遷移表を実装
+- `src/client/ingame/player_character.gd` — ステートマシンと連携
+- 入力: WASD移動、Shift でダッシュ
 
 ### 既知の注意点
 - `project.godot` のメインシーン設定は `run/main_scene`（`config/run/main_scene` ではない）
