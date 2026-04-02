@@ -149,6 +149,35 @@ godot --headless -- --server
 
 ## 開発フェーズ
 
-- **Phase 1**: ローカルでGodotクライアント + Godotサーバー間の接続・移動同期
+- **Phase 1**: ローカルでGodotクライアント + Godotサーバー間の接続・移動同期 ✅ 完了
 - **Phase 2**: Cloudflare WorkersでマッチメイキングAPI実装
 - **Phase 3**: VPSにGodotサーバーをデプロイ、Cloudflare経由で接続
+
+## 現在の進捗（2026-04-02時点）
+
+### 完了済み
+- WebSocketマルチプレイヤー基盤（サーバー起動・接続・移動同期）
+- プレイヤーモデル（Player.fbx）をGodotにインポート済み
+- ボールモデル（Football_01.fbx）をGodotにインポート済み
+- 現在のブランチ: `feature/phase1-multiplayer-movement`（PR #1 → develop）
+
+### 次にやること（優先順）
+1. **アニメーション対応**（中断中）
+   - Mixamo（https://www.mixamo.com）に Player.fbx をアップロード
+   - Idle / Run / Walk アニメーションを **FBX Binary・Without Skin・30fps** でダウンロード
+   - `godot/assets/animations/` に配置
+   - player_character.gd はすでにアニメーション切り替えロジック実装済み
+2. Phase 2: Cloudflare Workersマッチメイキング実装
+
+### 既知の注意点
+- `project.godot` のメインシーン設定は `run/main_scene`（`config/run/main_scene` ではない）
+- `game_manager.gd` は autoload のため `class_name` を付けない
+- UI はシーンファイルではなくコード（`_build_ui()`）で構築している
+- Godot バージョン: 4.4.3
+
+### アセット
+| ファイル | 場所 | 状態 |
+|---------|------|------|
+| Player.fbx | `assets/models/characters/` | インポート済み・アニメーションは Take 001 のみ |
+| Football_01.fbx | `assets/models/ball/` | インポート済み・未配置 |
+| 3D_run/walk/dash.anim | `assets/animations/` | Unity形式・Godotでは使用不可 |
