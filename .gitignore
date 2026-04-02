@@ -1,0 +1,22 @@
+# Godot
+.godot/
+*.translation
+export_presets.cfg
+
+# Godot mono / C# (使わないが念のため)
+.mono/
+data_*/
+mono_crash.*.json
+
+# macOS
+.DS_Store
+
+# Cloudflare Workers
+matchmaking/node_modules/
+matchmaking/.wrangler/
+matchmaking/dist/
+
+# エディタ
+.idea/
+.vscode/
+*.user
