@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/client/outgame/main_menu.gd" id="1"]
+
+[node name="MainMenu" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -120.0
+offset_right = 160.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+text = "Grassroots Football"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+
+[node name="AddressInput" type="LineEdit" parent="VBoxContainer"]
+placeholder_text = "サーバーアドレス (例: 127.0.0.1)"
+text = "127.0.0.1"
+
+[node name="ConnectButton" type="Button" parent="VBoxContainer"]
+text = "接続する"
+
+[node name="StartServerButton" type="Button" parent="VBoxContainer"]
+text = "サーバーを起動する"
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
