@@ -36,20 +36,32 @@ const DISPLAY_NAMES: Dictionary = {
 	Type.PUNCHING:     "パンチング",
 }
 
-## Mixamoからダウンロードするアニメーション名との対応表
-## ダウンロード後にファイル名に合わせて更新する
+## アニメーション名との対応表（AnimationPlayer に登録する名前）
 const ANIMATION_NAMES: Dictionary = {
-	Type.IDLE:         "Idle",
-	Type.RUN:          "Running",
-	Type.DASH:         "Sprinting",
-	Type.DRIBBLE:      "Soccer Dribble",
-	Type.DASH_DRIBBLE: "Soccer Run Dribble",
-	Type.KICK:         "Soccer Kick",
-	Type.VOLLEY:       "Soccer Volley",
-	Type.HEADING:      "Soccer Heading",
-	Type.SLIDING:      "Sliding",
-	Type.TACKLE:       "Soccer Tackle",
-	Type.JUMP:         "Jump",
-	Type.SAVING:       "Goalkeeper Dive",
-	Type.PUNCHING:     "Goalkeeper Punch",
+	Type.IDLE:         "idle",
+	Type.RUN:          "run",
+	Type.DASH:         "dash",
+	Type.DRIBBLE:      "dribble",
+	Type.DASH_DRIBBLE: "dribble",      # ドリブルを流用
+	Type.KICK:         "kick",
+	Type.VOLLEY:       "kick_pass",     # パスモーションを流用
+	Type.HEADING:      "heading",
+	Type.SLIDING:      "slide_tackle",
+	Type.TACKLE:       "slide_tackle",  # スライディングを流用
+	Type.JUMP:         "jump",
+	Type.SAVING:       "",              # 未実装（GK専用）
+	Type.PUNCHING:     "",              # 未実装（GK専用）
+}
+
+## アクション → Mixamo FBX ファイルパスの対応表
+const ANIMATION_FBX: Dictionary = {
+	"idle":         "res://assets/animations/mixamo/idle.fbx",
+	"run":          "res://assets/animations/mixamo/run.fbx",
+	"dash":         "res://assets/animations/mixamo/run.fbx",  # Run を流用
+	"dribble":      "res://assets/animations/mixamo/dribble.fbx",
+	"kick":         "res://assets/animations/mixamo/kick.fbx",
+	"kick_pass":    "res://assets/animations/mixamo/kick_pass.fbx",
+	"heading":      "res://assets/animations/mixamo/header.fbx",
+	"slide_tackle": "res://assets/animations/mixamo/slide_tackle.fbx",
+	"jump":         "res://assets/animations/mixamo/jump.fbx",
 }

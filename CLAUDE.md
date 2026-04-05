@@ -164,46 +164,61 @@ godot --headless -- --server
 
 ---
 
-## 現在の進捗（2026-04-04時点）
+## 現在の進捗（2026-04-05時点）
 
 ### 完了済み
 - WebSocketマルチプレイヤー基盤（サーバー起動・接続・移動同期）
 - プレイヤーモデル（Player.fbx）をGodotにインポート済み
 - ボールモデル（Football_01.fbx）をGodotにインポート済み
-- 現在のブランチ: `feature/phase1-multiplayer-movement`（PR #1 → develop）
+- Mixamoアニメーションのダウンロード・配置・ランタイム読み込み実装
+- `--server` コマンドライン引数による自動サーバー起動
+- 現在のブランチ: `feature/animation-state-machine`
 
 ### 次にやること（優先順）
-1. **Mixamoアニメーションのダウンロード**（中断中）
-   - Mixamo（https://www.mixamo.com）に `godot/assets/models/characters/Player.fbx` をアップロード
-   - 以下のアニメーションを **FBX Binary・Without Skin・30fps** でダウンロード
-     | Mixamo検索ワード | アクション | ANIMATION_NAMESの値 |
-     |----------------|-----------|-------------------|
-     | Idle | 待機 | "Idle" |
-     | Running | 走り | "Running" |
-     | Sprinting | ダッシュ | "Sprinting" |
-     | Soccer Dribble | ドリブル | "Soccer Dribble" |
-     | Soccer Kick | キック | "Soccer Kick" |
-     | Jump | ジャンプ | "Jump" |
-     | Sliding | スライディング | "Sliding" |
-   - ダウンロードしたFBXを `godot/assets/animations/mixamo/` に配置
-   - `player_action.gd` の `ANIMATION_NAMES` をダウンロードしたファイル名に合わせて更新
+1. **アニメーション動作確認**（トラックパスが正しくキャラクターに適用されるかGUIで確認）
 2. Phase 2: Cloudflare Workersマッチメイキング実装
 
-### アニメーションステートマシン（実装済み）
-- `src/shared/models/player_action.gd` — アクションenum・アニメーション名対応表
+### アニメーションシステム
+- `src/shared/models/player_action.gd` — アクションenum・ANIMATION_NAMES・ANIMATION_FBX対応表
 - `src/shared/models/player_state_machine.gd` — アクション.xlsxの遷移表を実装
-- `src/client/ingame/player_character.gd` — ステートマシンと連携
+- `src/client/ingame/player_character.gd` — ステートマシン連携・Mixamo FBXランタイム読み込み
 - 入力: WASD移動、Shift でダッシュ
+- アニメーション読み込み方式: 起動時に各FBXをPackedSceneとしてロード → AnimationPlayerから抽出 → プレイヤーのAnimationLibraryに登録
+
+### Mixamoアニメーション配置（`assets/animations/mixamo/`）
+| ファイル | アクション | 備考 |
+|---------|-----------|------|
+| `idle.fbx` | IDLE（待機） | |
+| `run.fbx` | RUN（走り） | DASHでも流用 |
+| `dribble.fbx` | DRIBBLE（ドリブル） | DASH_DRIBBLEでも流用 |
+| `kick.fbx` | KICK（キック） | |
+| `kick_pass.fbx` | VOLLEY（ボレー） | パスモーション流用 |
+| `header.fbx` | HEADING（ヘディング） | |
+| `slide_tackle.fbx` | SLIDING / TACKLE | 両方で流用 |
+| `jump.fbx` | JUMP（ジャンプ） | |
+| `crouch.fbx` | 未割当 | PlayerActionに未定義 |
+| `interact.fbx` | 未割当 | PlayerActionに未定義 |
+| `celebrate.fbx` | 未割当 | PlayerActionに未定義 |
+| `down.fbx` | 未割当 | PlayerActionに未定義 |
+| `celebrate_jump.fbx` | 予備 | |
+| `celebrate_dance.fbx` | 予備 | |
+
+### 未整理アニメーション（`assets/animations/maximo/`）
+- Mixamoからダウンロードした生ファイル（70+個）
+- ゴールキーパー用アニメ多数、Soccer Game Pack含む
+- 必要に応じて `mixamo/` にリネームコピーして使う
 
 ### 既知の注意点
 - `project.godot` のメインシーン設定は `run/main_scene`（`config/run/main_scene` ではない）
 - `game_manager.gd` は autoload のため `class_name` を付けない
 - UI はシーンファイルではなくコード（`_build_ui()`）で構築している
-- Godot バージョン: 4.4.3
+- Godot バージョン: 4.6.2
+- FBXファイルはGodotエディタで一度開いてインポートが必要（`.import`ファイル生成）
 
 ### アセット
 | ファイル | 場所 | 状態 |
 |---------|------|------|
 | Player.fbx | `assets/models/characters/` | インポート済み・アニメーションは Take 001 のみ |
 | Football_01.fbx | `assets/models/ball/` | インポート済み・未配置 |
+| Mixamo FBX (14個) | `assets/animations/mixamo/` | インポート済み・ランタイム読み込み実装済み |
 | 3D_run/walk/dash.anim | `assets/animations/` | Unity形式・Godotでは使用不可 |

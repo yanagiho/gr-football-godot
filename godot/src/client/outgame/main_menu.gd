@@ -21,6 +21,10 @@ func _ready() -> void:
 	_client.connected_to_server.connect(_on_connected_to_server)
 	_client.connection_failed.connect(_on_connection_failed)
 
+	# コマンドライン引数で自動起動
+	if "--server" in OS.get_cmdline_user_args():
+		_on_start_server_pressed.call_deferred()
+
 func _build_ui() -> void:
 	var bg := ColorRect.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

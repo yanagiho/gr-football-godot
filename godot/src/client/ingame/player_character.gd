@@ -25,6 +25,7 @@ func _ready() -> void:
 
 	_animation_player = find_child("AnimationPlayer", true, false) as AnimationPlayer
 	if _animation_player:
+		_load_mixamo_animations()
 		_play_action_animation(PlayerAction.Type.IDLE)
 
 func _physics_process(delta: float) -> void:
@@ -59,7 +60,38 @@ func _handle_movement() -> void:
 func _is_dashing() -> bool:
 	return Input.is_action_pressed("dash")
 
-func _on_action_changed(from: PlayerAction.Type, to: PlayerAction.Type) -> void:
+# --- アニメーション ---
+
+func _load_mixamo_animations() -> void:
+	## Mixamo FBX からアニメーションを読み込み、AnimationPlayer に登録する
+	var lib: AnimationLibrary = _animation_player.get_animation_library("")
+	if not lib:
+		lib = AnimationLibrary.new()
+		_animation_player.add_animation_library("", lib)
+
+	for anim_name: String in PlayerAction.ANIMATION_FBX:
+		if lib.has_animation(anim_name):
+			continue
+
+		var fbx_path: String = PlayerAction.ANIMATION_FBX[anim_name]
+		var scene: PackedScene = load(fbx_path) as PackedScene
+		if not scene:
+			push_warning("Animation FBX not found: %s" % fbx_path)
+			continue
+
+		var instance: Node = scene.instantiate()
+		var src_ap: AnimationPlayer = instance.find_child("AnimationPlayer", true, false) as AnimationPlayer
+		if src_ap:
+			var src_anims: PackedStringArray = src_ap.get_animation_list()
+			if src_anims.size() > 0:
+				var anim: Animation = src_ap.get_animation(src_anims[0]).duplicate()
+				lib.add_animation(anim_name, anim)
+		instance.free()
+
+	var loaded: PackedStringArray = _animation_player.get_animation_list()
+	print("Loaded animations: ", loaded)
+
+func _on_action_changed(_from: PlayerAction.Type, to: PlayerAction.Type) -> void:
 	_play_action_animation(to)
 
 func _play_action_animation(action: PlayerAction.Type) -> void:
@@ -67,10 +99,11 @@ func _play_action_animation(action: PlayerAction.Type) -> void:
 		return
 
 	var target_name: String = PlayerAction.ANIMATION_NAMES.get(action, "")
-	var available: Array = _animation_player.get_animation_list()
+	if target_name == "":
+		return
 
-	# 対応するアニメーションを名前で検索して再生
-	if target_name in available:
+	# 対応するアニメーションを再生
+	if _animation_player.has_animation(target_name):
 		if _animation_player.current_animation != target_name:
 			_animation_player.play(target_name)
 		return
@@ -80,5 +113,6 @@ func _play_action_animation(action: PlayerAction.Type) -> void:
 		PlayerAction.Type.IDLE:
 			_animation_player.stop()
 		_:
+			var available: PackedStringArray = _animation_player.get_animation_list()
 			if available.size() > 0:
 				_animation_player.play(available[0])
