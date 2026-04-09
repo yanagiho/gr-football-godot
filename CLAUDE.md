@@ -162,9 +162,17 @@ godot --headless -- --server
 
 作業は基本的に **yanagi の指示のもと Claude が実装** し、動作確認は yanagi が行う。
 
+## Unity版（参照資料）
+
+`/Users/yanagiho-mba/Desktop/gr-football/` に旧Unity版が参照用として残っている。
+- `FootBall.Shared/Hubs/` — リアルタイム通信のHub定義
+- `FootBall.Shared/Services/` — リクエスト/レスポンス型サービス定義
+- `FootBall.Shared/Models/` — ゲームで使うデータモデル
+- WebSocketメッセージ設計の仕様書として活用可能
+
 ---
 
-## 現在の進捗（2026-04-05時点）
+## 現在の進捗（2026-04-09時点）
 
 ### 完了済み
 - WebSocketマルチプレイヤー基盤（サーバー起動・接続・移動同期）
@@ -172,18 +180,53 @@ godot --headless -- --server
 - ボールモデル（Football_01.fbx）をGodotにインポート済み
 - Mixamoアニメーションのダウンロード・配置・ランタイム読み込み実装
 - `--server` コマンドライン引数による自動サーバー起動
-- 現在のブランチ: `feature/animation-state-machine`
+- アニメーションステートマシン実装
+- アニメーション動作確認済み（大まかに動く）
+- maximo/ 生アニメーションファイル整理（goalkeeper/ / field_player/ に分類）
+- ボールシーン・物理挙動の実装（ball.tscn / ball.gd）
+- フィールドライン・ゴール・芝目模様の実装（field.gd）
+- 操作をUnity版準拠に変更（マウス左クリック=キック、Space=ジャンプ）
+- ModelPivot分離（カメラがプレイヤー回転に引きずられない構造）
+
+### 現在のブランチ: `feature/animation-state-machine`
 
 ### 次にやること（優先順）
-1. **アニメーション動作確認**（トラックパスが正しくキャラクターに適用されるかGUIで確認）
-2. Phase 2: Cloudflare Workersマッチメイキング実装
+1. **操作仕様書を確認して移動操作を実装し直す**（yanagi が仕様書を配置予定）
+2. 移動のデバッグ出力を削除（確認完了後）
+3. ボール操作（キック・ドリブル）の動作確認・調整
+4. Phase 2: Cloudflare Workersマッチメイキング実装
+
+### 操作（Unity版準拠・現在の実装）
+| 操作 | キー |
+|------|------|
+| 移動 | WASD / 矢印キー（ワールド空間・8方向） |
+| ダッシュ | Left Shift |
+| キック | マウス左クリック / Enter |
+| ジャンプ | Space |
+| クラウチ | C（将来用） |
+| インタラクト | E（将来用） |
+
+### 既知の課題
+- **移動方向が「固定」に感じる問題**: 操作仕様書の確認待ち。現状はワールド空間固定（WASD=画面上下左右）で、Unity版と同じ実装だが yanagi が期待する動きと異なる可能性あり
+- キック・ドリブルの動作は未確認（ボール操作のチューニング必要）
 
 ### アニメーションシステム
 - `src/shared/models/player_action.gd` — アクションenum・ANIMATION_NAMES・ANIMATION_FBX対応表
 - `src/shared/models/player_state_machine.gd` — アクション.xlsxの遷移表を実装
-- `src/client/ingame/player_character.gd` — ステートマシン連携・Mixamo FBXランタイム読み込み
-- 入力: WASD移動、Shift でダッシュ
+- `src/client/ingame/player_character.gd` — ステートマシン連携・Mixamo FBXランタイム読み込み・ボール操作
+- `src/client/ingame/ball.gd` — ボール物理（キック・ドリブル・減速・場外リセット）
+- `src/client/ingame/field.gd` — フィールドライン・ゴール・芝目模様の描画
 - アニメーション読み込み方式: 起動時に各FBXをPackedSceneとしてロード → AnimationPlayerから抽出 → プレイヤーのAnimationLibraryに登録
+
+### シーン構造（player.tscn）
+```
+PlayerCharacter (CharacterBody3D) ← 回転しない（カメラ固定のため）
+├── ModelPivot (Node3D) ← モデルの向きだけ回転
+│   └── Model (Player.fbx)
+├── Camera3D (0, 8, 6) — 見下ろし30°
+├── CollisionShape3D (CapsuleShape3D)
+└── MultiplayerSynchronizer
+```
 
 ### Mixamoアニメーション配置（`assets/animations/mixamo/`）
 | ファイル | アクション | 備考 |
@@ -203,10 +246,12 @@ godot --headless -- --server
 | `celebrate_jump.fbx` | 予備 | |
 | `celebrate_dance.fbx` | 予備 | |
 
-### 未整理アニメーション（`assets/animations/maximo/`）
-- Mixamoからダウンロードした生ファイル（70+個）
-- ゴールキーパー用アニメ多数、Soccer Game Pack含む
-- 必要に応じて `mixamo/` にリネームコピーして使う
+### 整理済みアニメーション（`assets/animations/maximo/`）
+| フォルダ | 内容 | 用途 |
+|---------|------|------|
+| `goalkeeper/` | GK専用アニメ12個 | 将来のSAVING/PUNCHING実装用 |
+| `field_player/` | フィールドプレイヤー用26個 | 予備・代替素材 |
+| ルート | `Player.fbx` + テクスチャ | キャラモデル |
 
 ### 既知の注意点
 - `project.godot` のメインシーン設定は `run/main_scene`（`config/run/main_scene` ではない）
@@ -214,11 +259,14 @@ godot --headless -- --server
 - UI はシーンファイルではなくコード（`_build_ui()`）で構築している
 - Godot バージョン: 4.6.2
 - FBXファイルはGodotエディタで一度開いてインポートが必要（`.import`ファイル生成）
+- CharacterBody3D は回転させない（子ノードの Camera3D が一緒に回るため）。モデル回転は ModelPivot ノードで行う
+- アクション.xlsx は `/Users/yanagiho-mba/Desktop/アクション.xlsx` にある（遷移テーブル定義）
 
 ### アセット
 | ファイル | 場所 | 状態 |
 |---------|------|------|
-| Player.fbx | `assets/models/characters/` | インポート済み・アニメーションは Take 001 のみ |
-| Football_01.fbx | `assets/models/ball/` | インポート済み・未配置 |
+| Player.fbx | `assets/models/characters/` | インポート済み |
+| Football_01.fbx | `assets/models/ball/` | インポート済み・ball.tscnで使用 |
 | Mixamo FBX (14個) | `assets/animations/mixamo/` | インポート済み・ランタイム読み込み実装済み |
-| 3D_run/walk/dash.anim | `assets/animations/` | Unity形式・Godotでは使用不可 |
+| Maximo GK (12個) | `assets/animations/maximo/goalkeeper/` | 整理済み・未使用 |
+| Maximo FP (26個) | `assets/animations/maximo/field_player/` | 整理済み・未使用 |
