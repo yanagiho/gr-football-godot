@@ -2,6 +2,8 @@
 .godot/
 *.translation
 export_presets.cfg
+*.import
+*.uid
 
 # Godot mono / C# (使わないが念のため)
 .mono/
